@@ -203,7 +203,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="text-[9px] opacity-40 mono">${item.val.toLocaleString()}</span>
-                    <input type="checkbox" class="allowance-cb" data-id="${item.id}" value="${item.val}">
+                    <input type="checkbox" class="allowance-cb" data-id="${item.id}" value="+${item.val} /month">
                 </div>
             `;
             allowanceContainer.appendChild(div);
