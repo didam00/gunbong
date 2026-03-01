@@ -9,4 +9,298 @@
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-  ...
+    <style>
+        :root { --paper: #f5f5f3; --ink: #222222; }
+        
+        body {
+            /* 기본 폰트: Pretendard */
+            font-family: 'Pretendard Variable', Pretendard, sans-serif;
+            background-color: #e2e2e2;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        /* 숫자 및 고정폭 데이터용 폰트 */
+        .mono, .ticker, .ticker-total, #clock {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .receipt {
+            width: 100%;
+            max-width: 400px;
+            background: var(--paper);
+            padding: 40px 30px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .receipt::before {
+            content: ""; position: absolute; top: -10px; left: 0; right: 0; height: 10px;
+            background-image: radial-gradient(circle, transparent 70%, var(--paper) 70%);
+            background-size: 20px 20px; background-position: 0 -10px;
+        }
+
+        .receipt::after {
+            content: ""; position: absolute; bottom: -15px; left: 0; right: 0; height: 15px;
+            background: linear-gradient(-45deg, transparent 33.33%, var(--paper) 33.33%, var(--paper) 66.66%, transparent 66.66%),
+                        linear-gradient(45deg, transparent 33.33%, var(--paper) 33.33%, var(--paper) 66.66%, transparent 66.66%);
+            background-size: 10px 20px;
+        }
+
+        .dotted-line { border-top: 2px dotted var(--ink); margin: 1.2rem 0; }
+        .dashed-line { border-top: 1px dashed #ccc; margin: 0.8rem 0; }
+
+        .ticker { 
+            font-size: 2.8rem; 
+            font-weight: 800; 
+            letter-spacing: -0.05em; 
+            line-height: 1; 
+            font-variant-numeric: tabular-nums; 
+        }
+
+        .ticker-total { 
+            font-size: 0.85rem; 
+            color: #888; 
+            font-weight: 700; 
+            font-variant-numeric: tabular-nums; 
+        }
+
+        select, input { 
+            background: none; 
+            border: 1px solid var(--ink); 
+            font-size: 0.75rem; 
+            font-weight: 700; 
+            padding: 2px 4px; 
+            border-radius: 2px; 
+        }
+
+        .item-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; margin: 0.3rem 0; }
+        .label-sm { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; opacity: 0.6; }
+        
+        .tooltip { position: relative; display: inline-flex; align-items: center; cursor: help; }
+        .tooltip .tooltiptext {
+            visibility: hidden; width: 200px; background-color: var(--ink); color: #fff;
+            text-align: left; border-radius: 4px; padding: 8px; position: absolute;
+            z-index: 10; bottom: 125%; left: 50%; margin-left: -100px; opacity: 0;
+            transition: opacity 0.2s; font-size: 0.7rem; font-weight: 400; line-height: 1.4;
+        }
+        .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <div class="receipt">
+        <header class="text-center mb-6">
+            <h1 class="text-xl font-black tracking-tighter">SALARY STATEMENT</h1>
+            <p id="clock" class="text-[10px] font-bold opacity-60 uppercase">0000-00-00 00:00:00</p>
+        </header>
+
+        <div class="space-y-2 text-center">
+            <div>
+                <span class="label-sm">Today's Accumulated (00:00 기준)</span>
+                <div class="ticker" id="today-ticker">0.00</div>
+            </div>
+            <div class="flex justify-center items-center gap-2 opacity-80">
+                <span class="text-[10px] font-bold text-gray-400">TOTAL SINCE ENLISTMENT:</span>
+                <span class="ticker-total" id="total-ticker">0.00</span>
+            </div>
+            <div class="flex justify-center items-center gap-2 opacity-80">
+                <span class="text-[10px] font-bold text-gray-400">HOURLY WAGE:</span>
+                <span class="hourly-wage" id="hourly-wage">0.00</span>
+            </div>
+        </div>
+
+        <div class="dotted-line"></div>
+
+        <div class="space-y-3">
+            <div class="item-row">
+                <span class="font-bold">입대일 (Enlist Date)</span>
+                <input type="date" id="enlist-date" class="w-32 mono">
+            </div>
+        </div>
+
+        <div class="dashed-line"></div>
+
+        <div class="space-y-1">
+            <span class="label-sm">Special Allowances</span>
+            <div id="allowance-list" class="space-y-1"></div>
+        </div>
+
+        <div class="dashed-line"></div>
+
+        <div class="item-row">
+            <div>
+                <span class="font-bold block text-xs">군 적금 매칭지원금 (200%)</span>
+                <span class="text-[9px] opacity-50">월 최대 55만원 정부 지원금 포함</span>
+            </div>
+            <input type="checkbox" id="savings" class="w-5 h-5 accent-black">
+        </div>
+
+        <div class="dotted-line"></div>
+
+        <div class="space-y-1">
+            <div class="item-row">
+                <span class="label-sm">Current Monthly Total</span>
+                <span class="font-bold mono" id="monthly-val">₩0</span>
+            </div>
+            <div class="item-row">
+                <span class="label-sm">Current Rank</span>
+                <span class="font-bold text-xs" id="current-rank-display">-</span>
+            </div>
+        </div>
+
+        <footer class="mt-8 text-center">
+            <div class="inline-block border-2 border-black px-4 py-1 font-black text-xs mb-2">
+                THANK YOU FOR YOUR SERVICE
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const PAY_TABLE = { '병장': 1500000, '상병': 1200000, '일병': 900000, '이병': 750000 };
+
+        const allowanceData = [
+            { id: 'gap2', name: '해상특수/심해구조', val: 240200, info: '반기에 6회 이상 40m 이상 수중 작업 또는 심해 해난구조' },
+            { id: 'gap3', name: '대테러/특수전', val: 218400, info: '대테러 또는 특수전술 업무를 주로 수행' },
+            { id: 'gap4', name: '고공강하', val: 138800, info: '반기에 2회 이상 1,500m 이상 고공 낙하산 강하' },
+            { id: 'eul1', name: '공수강하', val: 85000, info: '반기에 2회 이상 항공기/훈련기구 낙하산 강하' },
+            { id: 'eul2', name: '레펠/패스트로프', val: 55000, info: '헬기 로프 하강 또는 레펠 훈련 수행' },
+            { id: 'byeong', name: '기타 특수분야', val: 18000, info: '유해 발굴, 감식, 중장비 수송 등 특수 분야' }
+        ];
+
+        const todayTicker = document.getElementById('today-ticker');
+        const totalTicker = document.getElementById('total-ticker');
+        const hourlyWage = document.getElementById('hourly-wage');
+        const clockEl = document.getElementById('clock');
+        const enlistEl = document.getElementById('enlist-date');
+        const savingsEl = document.getElementById('savings');
+        const allowanceContainer = document.getElementById('allowance-list');
+        const monthlyEl = document.getElementById('monthly-val');
+        const rankDisplay = document.getElementById('current-rank-display');
+
+        allowanceData.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'item-row';
+            div.innerHTML = `
+                <div class="flex items-center gap-1">
+                    <span class="text-[11px] font-bold">${item.name}</span>
+                    <div class="tooltip"><span class="material-symbols-outlined text-[14px] opacity-40">help_outline</span><span class="tooltiptext">${item.info}</span></div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-[9px] opacity-40 mono">${item.val.toLocaleString()}</span>
+                    <input type="checkbox" class="allowance-cb" data-id="${item.id}" value="${item.val}">
+                </div>
+            `;
+            allowanceContainer.appendChild(div);
+        });
+
+        const allowanceCBs = document.querySelectorAll('.allowance-cb');
+
+        function saveSettings() {
+            const settings = {
+                enlist: enlistEl.value,
+                savings: savingsEl.checked,
+                allowances: Array.from(allowanceCBs).filter(cb => cb.checked).map(cb => cb.dataset.id)
+            };
+            localStorage.setItem('mil_pay_v2_5_dualfont', JSON.stringify(settings));
+        }
+
+        function loadSettings() {
+            const saved = localStorage.getItem('mil_pay_v2_5_dualfont');
+            if (saved) {
+                const s = JSON.parse(saved);
+                enlistEl.value = s.enlist;
+                savingsEl.checked = s.savings;
+                s.allowances.forEach(id => {
+                    const cb = document.querySelector(`.allowance-cb[data-id="${id}"]`);
+                    if (cb) cb.checked = true;
+                });
+            } else {
+                enlistEl.value = new Date().toISOString().split('T')[0];
+            }
+        }
+
+        function getCurrentRank(totalMonths, isFirstDay) {
+            const pvtLimit = isFirstDay ? 2 : 3;
+            if (totalMonths < pvtLimit) return '이병';
+            if (totalMonths < pvtLimit + 6) return '일병';
+            if (totalMonths < pvtLimit + 12) return '상병';
+            return '병장';
+        }
+
+        function getMonthlyPay(rank, extraAllowances, hasSavings) {
+            let pay = PAY_TABLE[rank] || 0;
+            pay += extraAllowances;
+            if (hasSavings) pay += 550000;
+            return pay;
+        }
+
+        function getPaydayDate(enlistDate, monthIndex) {
+            const d = new Date(enlistDate.getFullYear(), enlistDate.getMonth() + monthIndex, 1);
+            const day = (monthIndex === 0) ? 20 : 10;
+            return new Date(d.getFullYear(), d.getMonth(), day);
+        }
+
+        function update() {
+            const now = new Date();
+            const enlistDate = new Date(enlistEl.value);
+            if (isNaN(enlistDate)) return;
+
+            const isFirstDay = enlistDate.getDate() === 1;
+            const extra = Array.from(allowanceCBs).reduce((acc, cb) => acc + (cb.checked ? parseInt(cb.value) : 0), 0);
+            const hasSavings = savingsEl.checked;
+
+            let totalEarned = 0;
+            let m = 0;
+            let lastAnchor = enlistDate;
+
+            while (true) {
+                const payday = getPaydayDate(enlistDate, m);
+                if (payday > now) break;
+                totalEarned += getMonthlyPay(getCurrentRank(m, isFirstDay), extra, hasSavings);
+                lastAnchor = payday;
+                m++;
+            }
+
+            const currentRank = getCurrentRank(m, isFirstDay);
+            const currentPay = getMonthlyPay(currentRank, extra, hasSavings);
+            const nextPayday = getPaydayDate(enlistDate, m);
+            
+            const cycleMs = nextPayday - lastAnchor;
+            const elapsedMs = now - lastAnchor;
+            const realtimePart = (elapsedMs / cycleMs) * currentPay;
+            
+            totalEarned += realtimePart;
+
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            const earnedToday = (now - startOfToday) / 86400000 * (currentPay / daysInMonth);
+            const houly = currentPay / daysInMonth
+
+            todayTicker.innerText = earnedToday.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            totalTicker.innerText = `₩ ${Math.floor(totalEarned).toLocaleString()}`;
+            monthlyEl.innerText = `₩ ${currentPay.toLocaleString()}`;
+            rankDisplay.innerText = currentRank;
+            hourlyWage.innerText = `₩ ${Math.floor(hourly.toLocaleString())}`;
+            
+            const y = now.getFullYear();
+            const mo = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            const time = now.toTimeString().split(' ')[0];
+            clockEl.innerText = `${y}-${mo}-${d} ${time}`;
+        }
+
+        [enlistEl, savingsEl, ...allowanceCBs].forEach(el => {
+            el.addEventListener('change', () => { saveSettings(); update(); });
+        });
+
+        loadSettings();
+        setInterval(update, 41.6);
+        update();
+    </script>
+</body>
+</html>
