@@ -104,13 +104,15 @@
                 <span class="label-sm">Today's Accumulated (00:00 기준)</span>
                 <div class="ticker" id="today-ticker">0.00</div>
             </div>
-            <div class="flex justify-center items-center gap-2 opacity-80">
-                <span class="text-[10px] font-bold text-gray-400">TOTAL SINCE ENLISTMENT:</span>
-                <span class="ticker-total" id="total-ticker">0.00</span>
-            </div>
-            <div class="flex justify-center items-center gap-2 opacity-80 mt-[-16px]">
-                <span class="text-[10px] font-bold text-gray-400">HOURLY WAGE:</span>
-                <span class="hourly-wage" id="hourly-wage">0.00</span>
+            <div>
+                <div class="flex justify-center items-center gap-2 opacity-80">
+                    <span class="text-[10px] font-bold text-gray-400">TOTAL SINCE ENLISTMENT:</span>
+                    <span class="ticker-total" id="total-ticker">0.00</span>
+                </div>
+                <div class="flex justify-center items-center gap-2 opacity-80">
+                    <span class="text-[10px] font-bold text-gray-400">HOURLY WAGE:</span>
+                    <span class="hourly-wage" id="hourly-wage">0.00</span>
+                </div>
             </div>
         </div>
 
@@ -279,7 +281,7 @@
             const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
             const earnedToday = (now - startOfToday) / 86400000 * (currentPay / daysInMonth);
-            const hourly = currentPay / daysInMonth
+            const hourly = currentPay / daysInMonth / 24;
 
             todayTicker.innerText = earnedToday.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             totalTicker.innerText = `₩ ${Math.floor(totalEarned).toLocaleString()}`;
