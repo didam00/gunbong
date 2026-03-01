@@ -77,6 +77,15 @@
             padding: 2px 4px; 
             border-radius: 2px; 
         }
+        
+        .enlist-date {
+            outline: none;
+            bourder: none;
+            background: var(--ink);
+            color: var(--paper);
+            padding: 2px 0;
+        }
+            
 
         .item-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; margin: 0.3rem 0; }
         .label-sm { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; opacity: 0.6; }
@@ -121,7 +130,7 @@
         <div class="space-y-3">
             <div class="item-row">
                 <span class="font-bold">입대일 (Enlist Date)</span>
-                <input type="date" id="enlist-date" class="w-32 mono">
+                <input type="date" id="enlist-date" class="enlist-date w-32 mono">
             </div>
         </div>
 
