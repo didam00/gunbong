@@ -252,8 +252,7 @@
         function getMonthlyPay(rankText, extraAllowances, hasSavings) {
             const [rank, stepText] = rankText.split(" "); // 계급과 호봉 분리
             const step = parseInt(stepText.replace("호봉", ""), 10); // 호봉 숫자 추출
-            const basePay = PAY_TABLE[rank] || 0; // 계급에 따른 기본 월급
-            let pay = basePay + (step > 1 ? step * 10000 : 0); // 호봉에 따라 월급 증가
+            let pay = PAY_TABLE[rank] || 0; // 계급에 따른 기본 월급
             pay += extraAllowances;
             if (hasSavings) pay += 550000; // 적금 매칭 지원금 추가
             return pay;
