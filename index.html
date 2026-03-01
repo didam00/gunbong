@@ -225,19 +225,37 @@
                 enlistEl.value = new Date().toISOString().split('T')[0];
             }
         }
-
+        
         function getCurrentRank(totalMonths, isFirstDay) {
-            const pvtLimit = isFirstDay ? 2 : 3;
-            if (totalMonths < pvtLimit) return '이병';
-            if (totalMonths < pvtLimit + 6) return '일병';
-            if (totalMonths < pvtLimit + 12) return '상병';
-            return '병장';
+            const pvtLimit = isFirstDay ? 2 : 3; // 이병 기준
+            let rank = ''; // 계급
+            let step = 0; // 호봉
+        
+            if (totalMonths < pvtLimit) {
+                rank = '이병'; // 이병
+                step = totalMonths + 1; // 1호봉부터 계산
+            } else if (totalMonths < pvtLimit + 6) {
+                rank = '일병'; // 일병
+                step = totalMonths - pvtLimit + 1;
+            } else if (totalMonths < pvtLimit + 12) {
+                rank = '상병'; // 상병
+                step = totalMonths - (pvtLimit + 6) + 1;
+            } else {
+                rank = '병장'; // 병장
+                step = totalMonths - (pvtLimit + 12) + 1;
+            }
+        
+            return `${rank} ${step}호봉`; // 계급과 호봉 반환
         }
-
-        function getMonthlyPay(rank, extraAllowances, hasSavings) {
-            let pay = PAY_TABLE[rank] || 0;
+        
+        // PAY_TABLE에 따라 월급 계산 (계급과 호봉 모두 표시)
+        function getMonthlyPay(rankText, extraAllowances, hasSavings) {
+            const [rank, stepText] = rankText.split(" "); // 계급과 호봉 분리
+            const step = parseInt(stepText.replace("호봉", ""), 10); // 호봉 숫자 추출
+            const basePay = PAY_TABLE[rank] || 0; // 계급에 따른 기본 월급
+            let pay = basePay + (step > 1 ? step * 10000 : 0); // 호봉에 따라 월급 증가
             pay += extraAllowances;
-            if (hasSavings) pay += 550000;
+            if (hasSavings) pay += 550000; // 적금 매칭 지원금 추가
             return pay;
         }
 
